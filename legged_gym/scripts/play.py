@@ -17,8 +17,13 @@ def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
     env_cfg.env.num_envs = min(env_cfg.env.num_envs, 10)
+    env_cfg.viewer.rendered_envs_idx = list(range(env_cfg.env.num_envs))
+    for i in range(2):
+        env_cfg.viewer.pos[i] = env_cfg.viewer.pos[i] - env_cfg.terrain.plane_length / 4
+        env_cfg.viewer.lookat[i] = env_cfg.viewer.lookat[i] - env_cfg.terrain.plane_length / 4
     env_cfg.env.debug_viz = True
-    env_cfg.viewer.add_camera = True  # use a extra camera for moving
+    if RECORD_FRAMES or FOLLOW_ROBOT:
+        env_cfg.viewer.add_camera = True  # use a extra camera for moving
     env_cfg.terrain.border_size = 5
     env_cfg.terrain.num_rows = 2
     env_cfg.terrain.num_cols = 5
@@ -33,7 +38,7 @@ def play(args):
     env_cfg.init_state.yaw_angle_range = [0., 0.]
     # velocity range
     env_cfg.commands.ranges.lin_vel_x = [0.5, 1.0]
-    env_cfg.commands.ranges.lin_vel_y = [0., 0.]
+    env_cfg.commands.ranges.lin_vel_y = [-1., 1.]
     env_cfg.commands.ranges.ang_vel_yaw = [0., 0.]
     env_cfg.commands.ranges.heading = [0, 0]
 
@@ -53,7 +58,7 @@ def play(args):
 
     logger = Logger(env.dt)
     robot_index = 0 # which robot is used for logging
-    joint_index = 1 # which joint is used for logging
+    joint_index = 2 # which joint is used for logging
     stop_state_log = 500 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     
@@ -91,6 +96,7 @@ def play(args):
         # print debug info
         # print("base lin vel: ", env.base_lin_vel[robot_index, :].cpu().numpy())
         # print("base yaw angle: ", env.base_euler[robot_index, 2].item())
+        print("foot_height: ", env.link_pos[robot_index, env.feet_indices, 2].cpu().numpy())
         
         if i < stop_state_log:
             logger.log_states(
@@ -123,7 +129,7 @@ if __name__ == '__main__':
     EXPORT_POLICY = False
     RECORD_FRAMES = False  # only record frames in extra camera view
     MOVE_CAMERA   = False
-    FOLLOW_ROBOT  = True
+    FOLLOW_ROBOT  = False
     assert not (MOVE_CAMERA and FOLLOW_ROBOT), "Cannot move camera and follow robot at the same time"
     args = get_args()
     play(args)

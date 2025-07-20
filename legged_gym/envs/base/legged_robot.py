@@ -53,19 +53,19 @@ class LeggedRobot(BaseTask):
         exec_actions = self.last_actions if self.simulate_action_latency else self.actions
         if self.cfg.sim.use_implicit_controller: # use embedded pd controller
             target_dof_pos = self._compute_target_dof_pos(exec_actions)
-            self.robot.control_dofs_position(target_dof_pos, self.motor_dofs)
+            self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
             self.scene.step()
         else:
             for _ in range(self.cfg.control.decimation): # use self-implemented pd controller
                 self.torques = self._compute_torques(exec_actions)
                 if self.num_build_envs == 0:
                     torques = self.torques.squeeze()
-                    self.robot.control_dofs_force(torques, self.motor_dofs)
+                    self.robot.control_dofs_force(torques, self.motors_dof_idx)
                 else:
-                    self.robot.control_dofs_force(self.torques, self.motor_dofs)
+                    self.robot.control_dofs_force(self.torques, self.motors_dof_idx)
                 self.scene.step()
-                self.dof_pos[:] = self.robot.get_dofs_position(self.motor_dofs)
-                self.dof_vel[:] = self.robot.get_dofs_velocity(self.motor_dofs)
+                self.dof_pos[:] = self.robot.get_dofs_position(self.motors_dof_idx)
+                self.dof_vel[:] = self.robot.get_dofs_velocity(self.motors_dof_idx)
         self.post_physics_step()
 
         # return clipped obs, clipped states (None), rewards, dones and infos
@@ -92,13 +92,11 @@ class LeggedRobot(BaseTask):
         self.base_lin_vel[:] = transform_by_quat(self.robot.get_vel(), inv_base_quat) # trasform to base frame
         self.base_ang_vel[:] = transform_by_quat(self.robot.get_ang(), inv_base_quat)
         self.projected_gravity = transform_by_quat(self.global_gravity, inv_base_quat)
-        self.dof_pos[:] = self.robot.get_dofs_position(self.motor_dofs)
-        self.dof_vel[:] = self.robot.get_dofs_velocity(self.motor_dofs)
-        self.link_contact_forces[:] = torch.tensor(
-            self.robot.get_links_net_contact_force(),
-            device=self.device,
-            dtype=gs.tc_float,
-        )
+        self.dof_pos[:] = self.robot.get_dofs_position(self.motors_dof_idx)
+        self.dof_vel[:] = self.robot.get_dofs_velocity(self.motors_dof_idx)
+        self.link_contact_forces[:] = self.robot.get_links_net_contact_force()
+        self.link_pos[:] = self.robot.get_links_pos()
+        self.link_vel[:] = self.robot.get_links_vel()
         
         self._post_physics_step_callback()
 
@@ -171,6 +169,7 @@ class LeggedRobot(BaseTask):
             self._randomize_com_displacement(env_ids)
 
         # reset buffers
+        self.llast_actions[env_ids] = 0.
         self.last_actions[env_ids] = 0.
         self.last_dof_vel[env_ids] = 0.
         self.feet_air_time[env_ids] = 0.
@@ -241,6 +240,10 @@ class LeggedRobot(BaseTask):
                     self.dof_vel * self.obs_scales.dof_vel,
                     self.actions,
                     self.last_actions,
+                    self._friction_values,        # 1
+                    self._added_base_mass,        # 1
+                    self._base_com_bias,          # 3
+                    self._rand_push_vels[:, :2],  # 3
                 ),
                 dim=-1,
             )
@@ -255,11 +258,11 @@ class LeggedRobot(BaseTask):
                 substeps=self.sim_substeps),
             viewer_options=gs.options.ViewerOptions(
                 max_FPS=int(1 / self.dt * self.cfg.control.decimation),
-                camera_pos=(2.0, 0.0, 2.5),
-                camera_lookat=(0.0, 0.0, 0.5),
+                camera_pos=np.array(self.cfg.viewer.pos),
+                camera_lookat=np.array(self.cfg.viewer.lookat),
                 camera_fov=40,
             ),
-            vis_options=gs.options.VisOptions(rendered_envs_idx = list(range(min(self.cfg.viewer.num_rendered_envs, self.num_envs)))),
+            vis_options=gs.options.VisOptions(rendered_envs_idx = self.cfg.viewer.rendered_envs_idx),
             rigid_options=gs.options.RigidOptions(
                 dt=self.sim_dt,
                 constraint_solver=gs.constraint_solver.Newton,
@@ -390,7 +393,7 @@ class LeggedRobot(BaseTask):
         self.dof_vel[envs_idx] = 0.0
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
-            dofs_idx_local=self.motor_dofs,
+            dofs_idx_local=self.motors_dof_idx,
             zero_velocity=True,
             envs_idx=envs_idx,
         )
@@ -439,6 +442,7 @@ class LeggedRobot(BaseTask):
             # in Genesis, base link also has DOF, it's 6DOF if not fixed.
             dofs_vel = self.robot.get_dofs_velocity() # (num_envs, num_dof) [0:3] ~ base_link_vel
             push_vel = gs_rand_float(-max_push_vel_xy, max_push_vel_xy, (self.num_envs, 2), self.device)
+            self._rand_push_vels[:, :2] = push_vel.detach().clone()
             push_vel[((self.common_step_counter + self.env_identities) % int(self.push_interval_s / self.dt) != 0)] = 0
             dofs_vel[:, :2] += push_vel
             self.robot.set_dofs_velocity(dofs_vel)
@@ -533,7 +537,7 @@ class LeggedRobot(BaseTask):
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel], 
             device=self.device,
             dtype=gs.tc_float, 
-            requires_grad=False,) # TODO change this
+            requires_grad=False,)
         self.actions = torch.zeros((self.num_envs, self.num_actions), device=self.device, dtype=gs.tc_float)
         self.last_actions = torch.zeros_like(self.actions)
         self.llast_actions = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False) # last last actions
@@ -545,6 +549,12 @@ class LeggedRobot(BaseTask):
         self.feet_air_time = torch.zeros((self.num_envs, len(self.feet_indices)), device=self.device, dtype=gs.tc_float)
         self.last_contacts = torch.zeros((self.num_envs, len(self.feet_indices)), device=self.device,dtype=gs.tc_int)
         self.link_contact_forces = torch.zeros(
+            (self.num_envs, self.robot.n_links, 3), device=self.device, dtype=gs.tc_float
+        )
+        self.link_pos = torch.zeros(
+            (self.num_envs, self.robot.n_links, 3), device=self.device, dtype=gs.tc_float
+        )
+        self.link_vel = torch.zeros(
             (self.num_envs, self.robot.n_links, 3), device=self.device, dtype=gs.tc_float
         )
         self.continuous_push = torch.zeros(
@@ -584,8 +594,8 @@ class LeggedRobot(BaseTask):
         self.batched_p_gains = self.p_gains[None, :].repeat(self.num_envs, 1)
         self.batched_d_gains = self.d_gains[None, :].repeat(self.num_envs, 1)
         # PD control params
-        self.robot.set_dofs_kp(self.p_gains, self.motor_dofs)
-        self.robot.set_dofs_kv(self.d_gains, self.motor_dofs)
+        self.robot.set_dofs_kp(self.p_gains, self.motors_dof_idx)
+        self.robot.set_dofs_kv(self.d_gains, self.motors_dof_idx)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
@@ -652,8 +662,10 @@ class LeggedRobot(BaseTask):
         
         self._get_env_origins()
         
+        self._init_domain_params()
+        
         # name to indices
-        self.motor_dofs = [self.robot.get_joint(name).dof_idx_local for name in self.dof_names]
+        self.motors_dof_idx = [self.robot.get_joint(name).dof_start for name in self.cfg.asset.dof_names]
         
         # find link indices, termination links, penalized links, and feet
         def find_link_indices(names):
@@ -666,6 +678,7 @@ class LeggedRobot(BaseTask):
                 if flag:
                     link_indices.append(link.idx - self.robot.link_start)
             return link_indices
+        
         self.termination_indices = find_link_indices(self.cfg.asset.terminate_after_contacts_on)
         all_link_names = [link.name for link in self.robot.links]
         print(f"all link names: {all_link_names}")
@@ -679,8 +692,8 @@ class LeggedRobot(BaseTask):
         self.feet_link_indices_world_frame = [i+1 for i in self.feet_indices]
         
         # dof position limits
-        self.dof_pos_limits = torch.stack(self.robot.get_dofs_limit(self.motor_dofs), dim=1)
-        self.torque_limits = self.robot.get_dofs_force_range(self.motor_dofs)[1]
+        self.dof_pos_limits = torch.stack(self.robot.get_dofs_limit(self.motors_dof_idx), dim=1)
+        self.torque_limits = self.robot.get_dofs_force_range(self.motors_dof_idx)[1]
         for i in range(self.dof_pos_limits.shape[0]):
             # soft limits
             m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
@@ -701,7 +714,17 @@ class LeggedRobot(BaseTask):
         # randomize COM displacement
         if self.cfg.domain_rand.randomize_com_displacement:
             self._randomize_com_displacement(np.arange(self.num_envs))
-    
+
+    def _init_domain_params(self):
+        self._friction_values = torch.zeros(
+            self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
+        self._added_base_mass = torch.ones(
+            self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
+        self._rand_push_vels = torch.zeros(
+            self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
+        self._base_com_bias = torch.zeros(
+            self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
+
     def _randomize_friction(self, env_ids=None):
         ''' Randomize friction of all links'''
         min_friction, max_friction = self.cfg.domain_rand.friction_range
@@ -710,6 +733,8 @@ class LeggedRobot(BaseTask):
 
         ratios = gs.rand((len(env_ids), 1), dtype=float).repeat(1, solver.n_geoms) \
                  * (max_friction - min_friction) + min_friction
+        self._friction_values[env_ids] = ratios[:, 0].unsqueeze(1).detach().clone()
+        
         solver.set_geoms_friction_ratio(ratios, torch.arange(0, solver.n_geoms), env_ids)
     
     def _randomize_base_mass(self, env_ids=None):
@@ -717,6 +742,7 @@ class LeggedRobot(BaseTask):
         min_mass, max_mass = self.cfg.domain_rand.added_mass_range
         base_link_id = 1
         added_mass = gs.rand((len(env_ids), 1), dtype=float) * (max_mass - min_mass) + min_mass
+        self._added_base_mass[env_ids] = added_mass[:].detach().clone()
         self.rigid_solver.set_links_mass_shift(added_mass, [base_link_id, ], env_ids)
     
     def _randomize_com_displacement(self, env_ids):
@@ -726,7 +752,7 @@ class LeggedRobot(BaseTask):
 
         com_displacement = gs.rand((len(env_ids), 1, 3), dtype=float) \
                             * (max_displacement - min_displacement) + min_displacement
-        # com_displacement[:, :, 0] -= 0.02
+        self._base_com_bias[env_ids] = com_displacement[:, 0, :].detach().clone()
 
         self.rigid_solver.set_links_COM_shift(com_displacement, [base_link_id,], env_ids)
 
@@ -788,10 +814,13 @@ class LeggedRobot(BaseTask):
             # create a grid of robots
             num_cols = np.floor(np.sqrt(self.num_envs))
             num_rows = np.ceil(self.num_envs / num_cols)
-            xx, yy = torch.meshgrid(torch.arange(num_rows), torch.arange(num_cols))
+            xx, yy = torch.meshgrid(torch.arange(num_rows), torch.arange(num_cols), indexing='ij')
             # plane has limited size, we need to specify spacing base on num_envs, to make sure all robots are within the plane
             # restrict envs to a square of [plane_length/2, plane_length/2]
-            spacing = min((self.cfg.terrain.plane_length / 2) / (num_rows-1), (self.cfg.terrain.plane_length / 2) / (num_cols-1))
+            spacing = self.cfg.env.env_spacing
+            if num_rows * self.cfg.env.env_spacing > self.cfg.terrain.plane_length / 2 or \
+            num_cols * self.cfg.env.env_spacing > self.cfg.terrain.plane_length / 2:
+                spacing = min((self.cfg.terrain.plane_length / 2) / (num_rows-1), (self.cfg.terrain.plane_length / 2) / (num_cols-1))
             self.env_origins[:, 0] = spacing * xx.flatten()[:self.num_envs]
             self.env_origins[:, 1] = spacing * yy.flatten()[:self.num_envs]
             self.env_origins[:, 2] = 0.
@@ -806,7 +835,7 @@ class LeggedRobot(BaseTask):
         """
         y = torch.tensor(self.cfg.terrain.measured_points_y, device=self.device, requires_grad=False)
         x = torch.tensor(self.cfg.terrain.measured_points_x, device=self.device, requires_grad=False)
-        grid_x, grid_y = torch.meshgrid(x, y)
+        grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
         self.num_height_points = grid_x.numel()
         points = torch.zeros(self.num_envs, self.num_height_points, 3, device=self.device, requires_grad=False)
@@ -939,3 +968,19 @@ class LeggedRobot(BaseTask):
     def _reward_dof_close_to_default(self):
         # Penalize dof position deviation from default
         return torch.sum(torch.square(self.dof_pos - self.default_dof_pos), dim=1)
+    
+    def _reward_foot_clearance(self):
+        """
+        Encourage feet to be close to desired height while swinging
+        """
+        foot_vel = self.link_vel[:, self.feet_indices, :]
+        foot_vel_xy_norm = torch.norm(foot_vel[:, :, :2], dim=-1)
+        foot_pos = self.link_pos[:, self.feet_indices, :]
+        clearance_error = torch.sum(
+            foot_vel_xy_norm * torch.square(
+                foot_pos[:, :, 2] - 
+                self.cfg.rewards.foot_clearance_target - 
+                self.cfg.rewards.foot_height_offset
+            ), dim=-1
+        )
+        return torch.exp(-clearance_error / self.cfg.rewards.foot_clearance_tracking_sigma)

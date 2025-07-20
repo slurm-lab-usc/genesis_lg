@@ -105,7 +105,7 @@ class GO2DeployCfg( LeggedRobotCfg ):
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
             heading = [-3.14, 3.14]
     
-    class domain_rand:
+    class domain_rand( LeggedRobotCfg.domain_rand ):
         randomize_friction = True
         friction_range = [0.2, 1.7]
         randomize_base_mass = True
@@ -116,14 +116,6 @@ class GO2DeployCfg( LeggedRobotCfg ):
         simulate_action_latency = False # 1 step delay
         randomize_com_displacement = True
         com_displacement_range = [-0.01, 0.01]
-    
-    # viewer camera:
-    class viewer:
-        ref_env = 0
-        pos = [10, 0, 6]       # [m]
-        lookat = [11., 5, 3.]  # [m]
-        num_rendered_envs = 10  # number of environments to be rendered
-        add_camera = False
 
 class GO2DeployCfgPPO( LeggedRobotCfgPPO ):
     seed = 0

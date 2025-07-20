@@ -165,7 +165,7 @@ class GO2Deploy(LeggedRobot):
         self._get_env_origins()
         
         # name to indices
-        self.motor_dofs = [self.robot.get_joint(name).dof_idx_local for name in self.dof_names]
+        self.motors_dof_idx = [self.robot.get_joint(name).dof_start for name in self.cfg.asset.dof_names]
         
         # find link indices, termination links, penalized links, and feet
         def find_link_indices(names):
@@ -191,8 +191,8 @@ class GO2Deploy(LeggedRobot):
         self.feet_link_indices_world_frame = [i+1 for i in self.feet_indices]
         
         # dof position limits
-        self.dof_pos_limits = torch.stack(self.robot.get_dofs_limit(self.motor_dofs), dim=1)
-        self.torque_limits = self.robot.get_dofs_force_range(self.motor_dofs)[1]
+        self.dof_pos_limits = torch.stack(self.robot.get_dofs_limit(self.motors_dof_idx), dim=1)
+        self.torque_limits = self.robot.get_dofs_force_range(self.motors_dof_idx)[1]
         for i in range(self.dof_pos_limits.shape[0]):
             # soft limits
             m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
