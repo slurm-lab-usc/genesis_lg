@@ -85,14 +85,15 @@ class LeggedRobotCfg(BaseConfig):
     class domain_rand:
         randomize_friction = True
         friction_range = [0.5, 1.25]
-        randomize_base_mass = False
+        randomize_base_mass = True
         added_mass_range = [-1., 1.]
         push_robots = True
         push_interval_s = 15
         max_push_vel_xy = 1.
         randomize_com_displacement = True
         com_displacement_range = [-0.01, 0.01]
-        simulate_action_latency = True # 1 step delay
+        randomize_ctrl_delay = True
+        ctrl_delay_step_range = [0, 1]
 
     class rewards:
         class scales:

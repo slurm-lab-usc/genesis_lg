@@ -113,7 +113,6 @@ class GO2Cfg( LeggedRobotCfg ):
         push_robots = True
         push_interval_s = 15
         max_push_vel_xy = 1.
-        simulate_action_latency = False # 1 step delay
         randomize_com_displacement = True
         com_displacement_range = [-0.03, 0.03]
 

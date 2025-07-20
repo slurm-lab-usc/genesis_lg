@@ -4,14 +4,14 @@ class GO2DeployCfg( LeggedRobotCfg ):
     
     class env( LeggedRobotCfg.env ):
         num_envs = 4096
-        env_spacing = 3.  # not used with heightfields/trimeshes
+        env_spacing = 1.0
         num_actions = 12
         # observation history
         frame_stack = 5   # policy frame stack
         c_frame_stack = 3 # critic frame stack
         num_single_obs = 45
         num_observations = int( num_single_obs * frame_stack )
-        single_num_privileged_obs = 55
+        single_num_privileged_obs = 56
         num_privileged_obs = int( c_frame_stack * single_num_privileged_obs )
     
     class terrain( LeggedRobotCfg.terrain ):
@@ -22,15 +22,15 @@ class GO2DeployCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-            'FL_hip_joint': 0.1,   # [rad]
-            'RL_hip_joint': 0.1,   # [rad]
-            'FR_hip_joint': -0.1 ,  # [rad]
-            'RR_hip_joint': -0.1,   # [rad]
+            'FL_hip_joint': 0.0,   # [rad]
+            'RL_hip_joint': 0.0,   # [rad]
+            'FR_hip_joint': 0.0 ,  # [rad]
+            'RR_hip_joint': 0.0,   # [rad]
 
             'FL_thigh_joint': 0.8,     # [rad]
-            'RL_thigh_joint': 1.,   # [rad]
+            'RL_thigh_joint': 0.8,   # [rad]
             'FR_thigh_joint': 0.8,     # [rad]
-            'RR_thigh_joint': 1.,   # [rad]
+            'RR_thigh_joint': 0.8,   # [rad]
 
             'FL_calf_joint': -1.5,   # [rad]
             'RL_calf_joint': -1.5,    # [rad]
@@ -73,25 +73,30 @@ class GO2DeployCfg( LeggedRobotCfg ):
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.36
+        foot_clearance_target = 0.05 # desired foot clearance above ground [m]
+        foot_height_offset = 0.022   # height of the foot coordinate origin above ground [m]
+        foot_clearance_tracking_sigma = 0.01
+        only_positive_rewards = False
         class scales( LeggedRobotCfg.rewards.scales ):
             # limitation
-            dof_pos_limits = -2.0
+            dof_pos_limits = -10.0
             collision = -1.0
             # command tracking
             tracking_lin_vel = 1.0
             tracking_ang_vel = 0.5
             # smooth
-            lin_vel_z = -2.0
+            lin_vel_z = -0.5
             base_height = -1.0
             ang_vel_xy = -0.05
-            orientation = -1.0
+            orientation = -5.0
             dof_vel = -5.e-4
             dof_acc = -2.e-7
             action_rate = -0.01
+            action_smoothness = -0.01
             torques = -2.e-4
             # gait
             feet_air_time = 1.0
-            dof_close_to_default = -0.1
+            foot_clearance = 0.5
     
     class commands( LeggedRobotCfg.commands ):
         curriculum = True
@@ -112,10 +117,11 @@ class GO2DeployCfg( LeggedRobotCfg ):
         added_mass_range = [-1., 1.]
         push_robots = True
         push_interval_s = 15
-        max_push_vel_xy = 0.5
-        simulate_action_latency = False # 1 step delay
+        max_push_vel_xy = 1.
         randomize_com_displacement = True
-        com_displacement_range = [-0.01, 0.01]
+        com_displacement_range = [-0.03, 0.03]
+        randomize_ctrl_delay = True
+        ctrl_delay_step_range = [0, 1]
 
 class GO2DeployCfgPPO( LeggedRobotCfgPPO ):
     seed = 0

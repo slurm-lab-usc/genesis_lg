@@ -50,14 +50,18 @@ class LeggedRobot(BaseTask):
         """
         clip_actions = self.cfg.normalization.clip_actions
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
-        exec_actions = self.last_actions if self.simulate_action_latency else self.actions
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            self.action_queue[:, 1:] = self.action_queue[:, :-1].clone()
+            self.action_queue[:, 0] = self.actions.clone()
+            self.actions = self.action_queue[torch.arange(
+                self.num_envs), self.action_delay].clone()
         if self.cfg.sim.use_implicit_controller: # use embedded pd controller
-            target_dof_pos = self._compute_target_dof_pos(exec_actions)
+            target_dof_pos = self._compute_target_dof_pos(self.actions)
             self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
             self.scene.step()
         else:
             for _ in range(self.cfg.control.decimation): # use self-implemented pd controller
-                self.torques = self._compute_torques(exec_actions)
+                self.torques = self._compute_torques(self.actions)
                 if self.num_build_envs == 0:
                     torques = self.torques.squeeze()
                     self.robot.control_dofs_force(torques, self.motors_dof_idx)
@@ -189,6 +193,13 @@ class LeggedRobot(BaseTask):
         # send timeout info to the algorithm
         if self.cfg.env.send_timeouts:
             self.extras["time_outs"] = self.time_out_buf
+        
+        # reset action queue and delay
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            self.action_queue[env_ids] *= 0.
+            self.action_queue[env_ids] = 0.
+            self.action_delay[env_ids] = torch.randint(self.cfg.domain_rand.ctrl_delay_step_range[0],
+                                                       self.cfg.domain_rand.ctrl_delay_step_range[1]+1, (len(env_ids),), device=self.device, requires_grad=False)
     
     def compute_reward(self):
         """ Compute rewards
@@ -229,6 +240,11 @@ class LeggedRobot(BaseTask):
         if self.add_noise:
             self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
         
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            # normalize to [0, 1]
+            ctrl_delay = (self.action_delay /
+                          self.cfg.domain_rand.ctrl_delay_step_range[1]).unsqueeze(1)
+            
         if self.num_privileged_obs is not None:
             self.privileged_obs_buf = torch.cat(
                 (
@@ -244,6 +260,7 @@ class LeggedRobot(BaseTask):
                     self._added_base_mass,        # 1
                     self._base_com_bias,          # 3
                     self._rand_push_vels[:, :2],  # 3
+                    ctrl_delay,                   # 1
                 ),
                 dim=-1,
             )
@@ -573,6 +590,13 @@ class LeggedRobot(BaseTask):
         if self.cfg.terrain.measure_heights:
             self.height_points = self._init_height_points()
         self.measured_heights = 0
+        
+        # randomize action delay
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            self.action_queue = torch.zeros(
+                self.num_envs, self.cfg.domain_rand.ctrl_delay_step_range[1]+1, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+            self.action_delay = torch.randint(self.cfg.domain_rand.ctrl_delay_step_range[0],
+                                              self.cfg.domain_rand.ctrl_delay_step_range[1]+1, (self.num_envs,), device=self.device, requires_grad=False)
 
         self.default_dof_pos = torch.tensor(
             [self.cfg.init_state.default_joint_angles[name] for name in self.cfg.asset.dof_names],
@@ -775,7 +799,6 @@ class LeggedRobot(BaseTask):
         self.push_interval_s = self.cfg.domain_rand.push_interval_s
 
         self.dof_names = self.cfg.asset.dof_names
-        self.simulate_action_latency = self.cfg.domain_rand.simulate_action_latency
         self.debug = self.cfg.env.debug
         
     def _draw_debug_vis(self):
