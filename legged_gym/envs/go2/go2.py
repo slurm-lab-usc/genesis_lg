@@ -12,7 +12,7 @@ from typing import Tuple, Dict
 
 from legged_gym import LEGGED_GYM_ROOT_DIR
 from legged_gym.envs.base.legged_robot import LeggedRobot
-from legged_gym.utils.math import wrap_to_pi, torch_rand_sqrt_float
+from legged_gym.utils.math_utils import wrap_to_pi, torch_rand_sqrt_float
 from legged_gym.utils.helpers import class_to_dict
 from legged_gym.utils.gs_utils import *
 from .go2_config import GO2Cfg
@@ -53,3 +53,8 @@ class GO2(LeggedRobot):
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime
+
+    def _reward_action_smoothness(self):
+        '''Penalize action smoothness'''
+        action_smoothness_cost = torch.sum(torch.square(self.actions - 2*self.last_actions + self.llast_actions), dim=-1)
+        return action_smoothness_cost

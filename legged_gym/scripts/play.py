@@ -27,7 +27,7 @@ def play(args):
     env_cfg.terrain.border_size = 5
     env_cfg.terrain.num_rows = 2
     env_cfg.terrain.num_cols = 5
-    env_cfg.terrain.curriculum = True
+    env_cfg.terrain.curriculum = False
     env_cfg.terrain.selected = False
     env_cfg.noise.add_noise = True
     env_cfg.domain_rand.randomize_friction = False
@@ -37,7 +37,7 @@ def play(args):
     # initial state randomization
     env_cfg.init_state.yaw_angle_range = [0., 0.]
     # velocity range
-    env_cfg.commands.ranges.lin_vel_x = [0.5, 1.0]
+    env_cfg.commands.ranges.lin_vel_x = [-1.0, 1.0]
     env_cfg.commands.ranges.lin_vel_y = [-1., 1.]
     env_cfg.commands.ranges.ang_vel_yaw = [0., 0.]
     env_cfg.commands.ranges.heading = [0, 0]
@@ -59,7 +59,7 @@ def play(args):
     logger = Logger(env.dt)
     robot_index = 0 # which robot is used for logging
     joint_index = 2 # which joint is used for logging
-    stop_state_log = 500 # number of steps before plotting states
+    stop_state_log = 300 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     
     # for MOVE_CAMERA
@@ -96,7 +96,8 @@ def play(args):
         # print debug info
         # print("base lin vel: ", env.base_lin_vel[robot_index, :].cpu().numpy())
         # print("base yaw angle: ", env.base_euler[robot_index, 2].item())
-        print("foot_height: ", env.link_pos[robot_index, env.feet_indices, 2].cpu().numpy())
+        # print("base height: ", env.base_pos[robot_index, 2].cpu().numpy())
+        # print("foot_height: ", env.link_pos[robot_index, env.feet_indices, 2].cpu().numpy())
         
         if i < stop_state_log:
             logger.log_states(
