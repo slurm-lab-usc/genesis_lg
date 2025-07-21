@@ -3,7 +3,7 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 class GO2Cfg( LeggedRobotCfg ):
     
     class env( LeggedRobotCfg.env ):
-        num_envs = 4096
+        num_envs = 8192
         num_observations = 48
         num_privileged_obs = 67
         num_actions = 12
@@ -82,12 +82,13 @@ class GO2Cfg( LeggedRobotCfg ):
             tracking_ang_vel = 0.5
             # smooth
             lin_vel_z = -0.5
-            base_height = -1.0
+            base_height = -2.0
             ang_vel_xy = -0.05
-            orientation = -5.0
+            orientation = -1.0
             dof_vel = -5.e-4
             dof_acc = -2.e-7
             action_rate = -0.01
+            action_smoothness = -0.01
             torques = -2.e-4
             # gait
             feet_air_time = 1.0
@@ -115,6 +116,9 @@ class GO2Cfg( LeggedRobotCfg ):
         max_push_vel_xy = 1.
         randomize_com_displacement = True
         com_displacement_range = [-0.03, 0.03]
+    
+    class viewer( LeggedRobotCfg.viewer ):
+        rendered_envs_idx = [i for i in range(10)]  # number of environments to be rendered
 
 class GO2CfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
@@ -123,6 +127,6 @@ class GO2CfgPPO( LeggedRobotCfgPPO ):
         run_name = ''
         experiment_name = 'go2'
         save_interval = 100
-        load_run = "Jul20_19-44-24_"
+        load_run = "Jul21_17-07-50_"
         checkpoint = -1
         max_iterations = 1000
