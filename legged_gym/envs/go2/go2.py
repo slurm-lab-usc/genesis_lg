@@ -41,18 +41,6 @@ class GO2(LeggedRobot):
             envs_idx=envs_idx,
         )
         self.robot.zero_all_dofs_velocity(envs_idx)
-    
-    def _reward_feet_air_time(self):
-        # Reward long steps
-        contact = self.link_contact_forces[:, self.feet_indices, 2] > 1.
-        contact_filt = torch.logical_or(contact, self.last_contacts) 
-        self.last_contacts = contact
-        first_contact = (self.feet_air_time > 0.) * contact_filt
-        self.feet_air_time += self.dt
-        rew_airTime = torch.sum((self.feet_air_time - 0.2) * first_contact, dim=1) # reward only on first contact with the ground
-        rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
-        self.feet_air_time *= ~contact_filt
-        return rew_airTime
 
     def _reward_action_smoothness(self):
         '''Penalize action smoothness'''

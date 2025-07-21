@@ -16,7 +16,7 @@ def play(args):
     )
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 10)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 5)
     env_cfg.viewer.rendered_envs_idx = list(range(env_cfg.env.num_envs))
     for i in range(2):
         env_cfg.viewer.pos[i] = env_cfg.viewer.pos[i] - env_cfg.terrain.plane_length / 4

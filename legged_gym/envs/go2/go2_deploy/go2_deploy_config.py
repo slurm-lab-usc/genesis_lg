@@ -3,7 +3,7 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 class GO2DeployCfg( LeggedRobotCfg ):
     
     class env( LeggedRobotCfg.env ):
-        num_envs = 4096
+        num_envs = 8192
         env_spacing = 1.0
         num_actions = 12
         # observation history
@@ -79,16 +79,17 @@ class GO2DeployCfg( LeggedRobotCfg ):
         only_positive_rewards = False
         class scales( LeggedRobotCfg.rewards.scales ):
             # limitation
+            termination = -200.0
             dof_pos_limits = -10.0
             collision = -1.0
             # command tracking
-            tracking_lin_vel = 1.0
-            tracking_ang_vel = 0.5
+            tracking_lin_vel = 2.0
+            tracking_ang_vel = 1.0
             # smooth
             lin_vel_z = -0.5
-            base_height = -1.0
+            base_height = -2.0
             ang_vel_xy = -0.05
-            orientation = -5.0
+            orientation = -1.0
             dof_vel = -5.e-4
             dof_acc = -2.e-7
             action_rate = -0.01
@@ -122,6 +123,10 @@ class GO2DeployCfg( LeggedRobotCfg ):
         com_displacement_range = [-0.03, 0.03]
         randomize_ctrl_delay = True
         ctrl_delay_step_range = [0, 1]
+    
+    class normalization( LeggedRobotCfg.normalization ):
+        clip_observations = 20.
+        clip_actions = 10.
 
 class GO2DeployCfgPPO( LeggedRobotCfgPPO ):
     seed = 0
@@ -132,6 +137,6 @@ class GO2DeployCfgPPO( LeggedRobotCfgPPO ):
         run_name = ''
         experiment_name = 'go2_deploy'
         save_interval = 100
-        load_run = "Dec22_21-05-25_"
-        checkpoint = 1000
+        load_run = "Jul21_19-16-36_"
+        checkpoint = -1
         max_iterations = 3000
