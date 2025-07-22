@@ -10,6 +10,7 @@ class LeggedRobotCfg(BaseConfig):
         episode_length_s = 20 # episode length in seconds
         debug = False # if debugging, visualize contacts, 
         debug_viz = False # draw debug visualizations
+        env_spacing = 1.0
 
     class terrain:
         mesh_type = 'plane' # "heightfield" # none, plane, heightfield
@@ -84,14 +85,15 @@ class LeggedRobotCfg(BaseConfig):
     class domain_rand:
         randomize_friction = True
         friction_range = [0.5, 1.25]
-        randomize_base_mass = False
+        randomize_base_mass = True
         added_mass_range = [-1., 1.]
         push_robots = True
         push_interval_s = 15
         max_push_vel_xy = 1.
         randomize_com_displacement = True
         com_displacement_range = [-0.01, 0.01]
-        simulate_action_latency = True # 1 step delay
+        randomize_ctrl_delay = True
+        ctrl_delay_step_range = [0, 1]
 
     class rewards:
         class scales:
@@ -117,13 +119,13 @@ class LeggedRobotCfg(BaseConfig):
         soft_dof_vel_limit = 1.
         soft_torque_limit = 1.
         base_height_target = 1.
-        termination_if_roll_greater_than= 0.4
-        termination_if_pitch_greater_than= 0.4
-        termination_if_height_lower_than= 0.2
+        foot_clearance_target = 0.08 # desired foot clearance above ground [m]
+        foot_height_offset = 0.022   # height of the foot coordinate origin above ground [m]
+        foot_clearance_tracking_sigma = 0.01
 
     class normalization:
         class obs_scales:
-            lin_vel = 2.0
+            lin_vel = 1.0
             ang_vel = 0.25
             dof_pos = 1.0
             dof_vel = 0.05
@@ -136,7 +138,7 @@ class LeggedRobotCfg(BaseConfig):
         noise_level = 1.0 # scales other values
         class noise_scales:
             dof_pos = 0.01
-            dof_vel = 1.5
+            dof_vel = 0.5
             lin_vel = 0.1
             ang_vel = 0.2
             gravity = 0.05
@@ -145,9 +147,9 @@ class LeggedRobotCfg(BaseConfig):
     # viewer camera:
     class viewer:
         ref_env = 0
-        pos = [10, 0, 6]       # [m]
-        lookat = [11., 5, 3.]  # [m]
-        num_rendered_envs = 1  # number of environments to be rendered
+        pos = [2, 2, 2]       # [m]
+        lookat = [0., 0, 1.]  # [m]
+        rendered_envs_idx = [i for i in range(10)]  # number of environments to be rendered
         add_camera = False
 
     class sim:
