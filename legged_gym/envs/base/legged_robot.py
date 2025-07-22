@@ -709,11 +709,11 @@ class LeggedRobot(BaseTask):
         print("termination link indices:", self.termination_indices)
         self.penalized_indices = find_link_indices(self.cfg.asset.penalize_contacts_on)
         print(f"penalized link indices: {self.penalized_indices}")
-        self.feet_indices = find_link_indices(self.cfg.asset.foot_name)
+        self.feet_names = [link.name for link in self.robot.links if self.cfg.asset.foot_name[0] in link.name]
+        self.feet_indices = find_link_indices(self.feet_names)
         print(f"feet link indices: {self.feet_indices}")
         assert len(self.termination_indices) > 0
         assert len(self.feet_indices) > 0
-        self.feet_link_indices_world_frame = [i+1 for i in self.feet_indices]
         
         # dof position limits
         self.dof_pos_limits = torch.stack(self.robot.get_dofs_limit(self.motors_dof_idx), dim=1)
