@@ -74,10 +74,11 @@ class GO2DeployCfg(LeggedRobotCfg):
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.36
+        
         foot_clearance_target = 0.05  # desired foot clearance above ground [m]
-        # height of the foot coordinate origin above ground [m]
-        foot_height_offset = 0.022
+        foot_height_offset = 0.022 # height of the foot coordinate origin above ground [m]
         foot_clearance_tracking_sigma = 0.01
+        
         only_positive_rewards = False
 
         class scales(LeggedRobotCfg.rewards.scales):
@@ -86,13 +87,13 @@ class GO2DeployCfg(LeggedRobotCfg):
             dof_pos_limits = -10.0
             collision = -1.0
             # command tracking
-            tracking_lin_vel = 1.5
-            tracking_ang_vel = 0.75
+            tracking_lin_vel = 1.0
+            tracking_ang_vel = 0.5
             # smooth
             lin_vel_z = -0.5
-            base_height = -2.0
+            base_height = -1.0
             ang_vel_xy = -0.05
-            orientation = -1.0
+            orientation = -2.0
             dof_vel = -5.e-4
             dof_acc = -2.e-7
             action_rate = -0.01
@@ -161,6 +162,6 @@ class GO2DeployCfgPPO(LeggedRobotCfgPPO):
         run_name = ''
         experiment_name = 'go2_deploy'
         save_interval = 100
-        load_run = "Jul22_19-54-45_"
+        load_run = "Jul23_12-01-08_"
         checkpoint = -1
-        max_iterations = 3000
+        max_iterations = 4000

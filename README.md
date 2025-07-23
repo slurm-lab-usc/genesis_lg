@@ -21,20 +21,11 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
 ## 📅 Updates
 
 <details>
-<summary>2025/03/22</summary>
+<summary>2025/07/23</summary>
 
-- I created a [new repo based on legged_gym](https://github.com/lupinjia/legged_gym_ext), containing custom implementation of some RL control papers.
+- Added new feature: periodic gait reward for go2_deploy
 
 </details>
-
-<!-- <details>
-<summary>2025/02/23</summary>
-
-- find some bugs in genesis. The environments can return nan values without knowing why (https://github.com/Genesis-Embodied-AI/Genesis/issues/625), which can hinder long-time training where nan values may suddenly come out and terminates your training.
-
-  ![](./test_resources/nan_values_bug.png)
-
-</details> -->
 
 <details>
 <summary>2025/02/10</summary>
@@ -70,13 +61,6 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
 
 </details>
 
-<details>
-<summary>2024/12/23</summary>
-
-- divide main and deploy branches, deploy branch should be used with a custom rsl_rl(which will be open-source soon)
-
-</details>
-
 ---
 
 
@@ -91,6 +75,12 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
   For a go2 walking on the plane task with 4096 envs, the training speed in Genesis is approximately **1.3x** compared to [Isaac Gym](https://developer.nvidia.com/isaac-gym), while the graphics memory usage is roughly **1/2** compared to IsaacGym.
 
   With this smaller memory usage, it's possible to **run more parallel environments**, which can further improve the training speed.
+
+- Incorporation of various methods in published RL papers
+  
+  | Method | Paper Link | Location |
+  |--------|------------|----------|
+  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | `_uniped_periodic_gait() in go2_deploy.py` |
 
 ## 🧪 Test Results
 

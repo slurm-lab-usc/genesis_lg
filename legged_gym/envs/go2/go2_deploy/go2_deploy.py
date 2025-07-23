@@ -51,13 +51,14 @@ class GO2Deploy(LeggedRobot):
         self.check_base_pos_out_of_bound()
         self.check_termination()
         self.compute_reward()
-        # Periodic Reward Framework
+        # Periodic Reward Framework phi cycle
+        # step after computing reward but before resetting the env
         self.gait_time += self.dt
-        # -self.dt/2 in case of float precision errors
-        is_over_limit = (self.gait_time >= torch.ones_like(
-            self.gait_time, dtype=torch.float) - (self.dt / 2))
+        # +self.dt/2 in case of float precision errors
+        is_over_limit = (self.gait_time >= (torch.ones_like(
+            self.gait_time, device=self.device, dtype=gs.tc_float) - self.dt / 2))
         over_limit_indices = is_over_limit.nonzero(as_tuple=False).flatten()
-        self.gait_time[over_limit_indices] = 0.0 # reset gait time
+        self.gait_time[over_limit_indices] = 0.0
         
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         if self.num_build_envs > 0:
@@ -162,7 +163,7 @@ class GO2Deploy(LeggedRobot):
             self.theta_rl[env_ids, :] = self.cfg.rewards.periodic_reward_framework.theta_rl[gait]
             self.theta_rr[env_ids, :] = self.cfg.rewards.periodic_reward_framework.theta_rr[gait]
             self.gait_period[env_ids, :] = self.cfg.rewards.periodic_reward_framework.gait_period[gait]
-            self.b_swing[env_ids, :] = self.cfg.rewards.periodic_reward_framework.b_swing[gait]
+            self.b_swing[env_ids, :] = self.cfg.rewards.periodic_reward_framework.b_swing[gait] * 2 * torch.pi
         else:
             # resample gait
             gait = torch.randint(
@@ -172,7 +173,7 @@ class GO2Deploy(LeggedRobot):
             self.theta_rl[env_ids, :] = self.cfg.rewards.periodic_reward_framework.theta_rl[gait]
             self.theta_rr[env_ids, :] = self.cfg.rewards.periodic_reward_framework.theta_rr[gait]
             self.gait_period[env_ids, :] = self.cfg.rewards.periodic_reward_framework.gait_period[gait]
-            self.b_swing[env_ids, :] = self.cfg.rewards.periodic_reward_framework.b_swing[gait]
+            self.b_swing[env_ids, :] = self.cfg.rewards.periodic_reward_framework.b_swing[gait] * 2 * torch.pi
         self.a_stance[env_ids, :] = self.b_swing[env_ids, :]  # a_stance is the same as b_swing
 
     # ------------- Callbacks --------------
@@ -180,11 +181,11 @@ class GO2Deploy(LeggedRobot):
     def _calc_periodic_reward_obs(self):
         """Calculate the periodic reward observations.
         """
-        self.clock_input[:, 0] = torch.sin(self.gait_time + self.theta_fl).squeeze(-1)
-        self.clock_input[:, 1] = torch.sin(self.gait_time + self.theta_fr).squeeze(-1)
-        self.clock_input[:, 2] = torch.sin(self.gait_time + self.theta_rl).squeeze(-1)
-        self.clock_input[:, 3] = torch.sin(self.gait_time + self.theta_rr).squeeze(-1)
-
+        self.clock_input[:, 0] = torch.sin(2 * torch.pi * (self.gait_time + self.theta_fl)).squeeze(-1)
+        self.clock_input[:, 1] = torch.sin(2 * torch.pi * (self.gait_time + self.theta_fr)).squeeze(-1)
+        self.clock_input[:, 2] = torch.sin(2 * torch.pi * (self.gait_time + self.theta_rl)).squeeze(-1)
+        self.clock_input[:, 3] = torch.sin(2 * torch.pi * (self.gait_time + self.theta_rr)).squeeze(-1)
+    
     def _post_physics_step_callback(self):
         super()._post_physics_step_callback()
         # Periodic Reward Framework
@@ -270,7 +271,7 @@ class GO2Deploy(LeggedRobot):
             self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
         self.a_stance = torch.zeros(
             self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
-        self.b_swing[:] = self.cfg.rewards.periodic_reward_framework.b_swing[0]
+        self.b_swing[:] = self.cfg.rewards.periodic_reward_framework.b_swing[0] * 2 * torch.pi
         self.a_stance[:] = self.b_swing[:]
     
     def _create_envs(self):
