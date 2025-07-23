@@ -80,7 +80,7 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
   
   | Method | Paper Link | Location |
   |--------|------------|----------|
-  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | `_uniped_periodic_gait() in go2_deploy.py` |
+  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | [`_uniped_periodic_gait() in go2_deploy.py`](https://github.com/lupinjia/genesis_lr/blob/main/legged_gym/envs/go2/go2_deploy/go2_deploy.py) |
 
 ## 🧪 Test Results
 

@@ -59,7 +59,7 @@ def play(args):
     logger = QuadLogger(env.dt)
     robot_index = 0 # which robot is used for logging
     joint_index = 2 # which joint is used for logging
-    stop_state_log = 400 # number of steps before plotting states
+    stop_state_log = 300 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     
     # for MOVE_CAMERA
@@ -121,6 +121,7 @@ def play(args):
             )
         elif i==stop_state_log:
             logger.plot_states()
+            logger.save_data_to_xlsx()
         if  0 < i < stop_rew_log:
             if infos["episode"]:
                 num_episodes = torch.sum(env.reset_buf).item()

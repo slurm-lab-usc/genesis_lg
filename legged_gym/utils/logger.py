@@ -3,6 +3,7 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import xlsxwriter
 
 # Fix font issues
 plt.rcParams.update({
@@ -14,6 +15,8 @@ plt.rcParams.update({
     'legend.fontsize': 8,
     'figure.titlesize': 12
 })
+
+EXCEL_FILENAME = "/home/lupinjia/Documents/2025/genesis_test/20250723_go2_deploy_step_gait.xlsx"
 
 
 class Logger:
@@ -176,6 +179,27 @@ class Logger:
 class QuadLogger(Logger):
     def __init__(self, dt):
         super().__init__(dt)
+    
+    def set_header_of_xlsx(self):
+        self.workbook = xlsxwriter.Workbook(EXCEL_FILENAME)
+        self.worksheet = self.workbook.add_worksheet()
+        label = list(self.state_log.keys())
+        for i in range(len(label)):
+            self.worksheet.write(0, i, label[i])
+    
+    def save_data_to_xlsx(self):
+        '''
+        save the data to a excel file
+        '''
+        # set header
+        self.set_header_of_xlsx()
+        # get the first key, to get the length of the data
+        first_key = list(self.state_log.keys())[0]
+        for row in range(len(self.state_log[first_key])):
+            for col, key in enumerate(self.state_log.keys()):
+                self.worksheet.write(1+row, col, self.state_log[key][row])
+        self.workbook.close()
+        print("xlsx file created and filled!")
 
     def _plot(self):
         # Set matplotlib parameters to avoid font issues

@@ -10,9 +10,9 @@ class GO2DeployCfg(LeggedRobotCfg):
         # observation history
         frame_stack = 5   # policy frame stack
         c_frame_stack = 3  # critic frame stack
-        num_single_obs = 54
+        num_single_obs = 55
         num_observations = int(num_single_obs * frame_stack)
-        single_num_privileged_obs = 73
+        single_num_privileged_obs = 74
         num_privileged_obs = int(c_frame_stack * single_num_privileged_obs)
 
     class terrain(LeggedRobotCfg.terrain):
@@ -73,7 +73,7 @@ class GO2DeployCfg(LeggedRobotCfg):
 
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.36
+        base_height_target = 0.34
         
         foot_clearance_target = 0.05  # desired foot clearance above ground [m]
         foot_height_offset = 0.022 # height of the foot coordinate origin above ground [m]
@@ -105,6 +105,7 @@ class GO2DeployCfg(LeggedRobotCfg):
 
         class periodic_reward_framework:
             '''Periodic reward framework in OSU's paper(https://arxiv.org/abs/2011.01387)'''
+            gait_function_type = "step" # can be "step" or "smooth"
             kappa = 20
             resampling_time = 6.0                      # gait resampling time [s]
             gait_period = [0.5]                         # gait period [s]
@@ -159,9 +160,9 @@ class GO2DeployCfgPPO(LeggedRobotCfgPPO):
         entropy_coef = 0.01
 
     class runner(LeggedRobotCfgPPO.runner):
-        run_name = ''
+        run_name = 'smooth_gait'
         experiment_name = 'go2_deploy'
         save_interval = 100
-        load_run = "Jul23_12-01-08_"
+        load_run = "Jul23_16-56-35_smooth_gait"
         checkpoint = -1
-        max_iterations = 4000
+        max_iterations = 3000
