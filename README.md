@@ -32,7 +32,7 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
   
   | Method | Paper Link | Location | Materials |
   |--------|------------|----------|-----------|
-  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | [`go2_deploy.py`](https://github.com/lupinjia/genesis_lr/blob/main/legged_gym/envs/go2/go2_deploy/go2_deploy.py#L322) | [Comparison between smooth gait function and step gait function](https://github.com/lupinjia/genesis_lr/blob/main/test_resources/gait_reward_type/gait_reward_type.md) |
+  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | [go2_deploy](https://github.com/lupinjia/genesis_lr/blob/main/legged_gym/envs/go2/go2_deploy/go2_deploy.py#L322) | [Comparison between smooth gait function and step gait function](https://github.com/lupinjia/genesis_lr/blob/main/test_resources/gait_reward_type/gait_reward_type.md) |
   | System Identification | [Learning Agile Bipedal Motions on a Quadrupedal Robot](https://arxiv.org/abs/2311.05818) | [go2_sysid](https://github.com/lupinjia/genesis_lr/tree/main/legged_gym/envs/go2/go2_sysid) | |
 
 
