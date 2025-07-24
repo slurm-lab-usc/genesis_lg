@@ -12,7 +12,7 @@ class GO2DeployCfg(LeggedRobotCfg):
         c_frame_stack = 3  # critic frame stack
         num_single_obs = 55
         num_observations = int(num_single_obs * frame_stack)
-        single_num_privileged_obs = 74
+        single_num_privileged_obs = 73 + 24
         num_privileged_obs = int(c_frame_stack * single_num_privileged_obs)
 
     class terrain(LeggedRobotCfg.terrain):
@@ -75,7 +75,7 @@ class GO2DeployCfg(LeggedRobotCfg):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.34
         
-        foot_clearance_target = 0.05  # desired foot clearance above ground [m]
+        foot_clearance_target = 0.06  # desired foot clearance above ground [m]
         foot_height_offset = 0.022 # height of the foot coordinate origin above ground [m]
         foot_clearance_tracking_sigma = 0.01
         
@@ -144,8 +144,13 @@ class GO2DeployCfg(LeggedRobotCfg):
         max_push_vel_xy = 1.
         randomize_com_displacement = True
         com_displacement_range = [-0.03, 0.03]
-        randomize_ctrl_delay = True
+        randomize_ctrl_delay = False
         ctrl_delay_step_range = [0, 1]
+        randomize_pd_gain = True
+        kp_range = [0.8, 1.2]
+        kd_range = [0.8, 1.2]
+        randomize_joint_armature = False
+        joint_armature_range = [0.015, 0.025]  # [N*m*s/rad]
 
     class normalization(LeggedRobotCfg.normalization):
         clip_observations = 20.
@@ -160,9 +165,9 @@ class GO2DeployCfgPPO(LeggedRobotCfgPPO):
         entropy_coef = 0.01
 
     class runner(LeggedRobotCfgPPO.runner):
-        run_name = 'smooth_gait'
+        run_name = 'step_gait'
         experiment_name = 'go2_deploy'
         save_interval = 100
-        load_run = "Jul23_16-56-35_smooth_gait"
+        load_run = "Jul24_15-41-09_step_gait"
         checkpoint = -1
         max_iterations = 3000

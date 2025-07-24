@@ -16,7 +16,7 @@ plt.rcParams.update({
     'figure.titlesize': 12
 })
 
-EXCEL_FILENAME = "/home/lupinjia/Documents/2025/genesis_test/20250723_go2_deploy_step_gait.xlsx"
+EXCEL_FILENAME = "/home/lupinjia/Documents/2025/genesis_test/20250724_go2_deploy_step_gait.xlsx"
 
 
 class Logger:

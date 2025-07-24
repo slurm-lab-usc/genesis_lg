@@ -94,6 +94,8 @@ class LeggedRobotCfg(BaseConfig):
         com_displacement_range = [-0.01, 0.01]
         randomize_ctrl_delay = True
         ctrl_delay_step_range = [0, 1]
+        randomize_joint_armature = False
+        joint_armature_range = [0.0, 0.05]  # [N*m*s/rad]
 
     class rewards:
         class scales:
@@ -149,7 +151,7 @@ class LeggedRobotCfg(BaseConfig):
         ref_env = 0
         pos = [2, 2, 2]       # [m]
         lookat = [0., 0, 1.]  # [m]
-        rendered_envs_idx = [i for i in range(10)]  # number of environments to be rendered
+        rendered_envs_idx = [i for i in range(1)]  # number of environments to be rendered
         add_camera = False
 
     class sim:

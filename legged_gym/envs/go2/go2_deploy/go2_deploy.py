@@ -72,6 +72,15 @@ class GO2Deploy(LeggedRobot):
 
         if self.debug_viz:
             self._draw_debug_vis()
+    
+    def _compute_torques(self, actions):
+        # control_type = 'P'
+        actions_scaled = actions * self.cfg.control.action_scale
+        torques = (
+            self._kp_scale * self.batched_p_gains * (actions_scaled + self.default_dof_pos - self.dof_pos)
+            - self._kd_scale * self.batched_d_gains * self.dof_vel
+        )
+        return torques
 
     def compute_observations(self):
         """ Computes observations
@@ -114,7 +123,9 @@ class GO2Deploy(LeggedRobot):
                 self._added_base_mass,                         # 1
                 self._friction_values,                         # 1
                 self._base_com_bias,                           # 3
-                ctrl_delay,                                    # 1
+                # ctrl_delay,                                    # 1
+                self._kp_scale,                                # 12
+                self._kd_scale,                                # 12
                 # privileged infos
                 self.exp_C_frc_fl, self.exp_C_spd_fl,
                 self.exp_C_frc_fr, self.exp_C_spd_fr,
@@ -155,6 +166,8 @@ class GO2Deploy(LeggedRobot):
         self.gait_time[env_ids] = 0.0
         self.phi[env_ids] = 0.0
         self.clock_input[env_ids, :] = 0.0
+        # resample domain randomization parameters
+        self._episodic_domain_randomization(env_ids)
     
     def resample_gait(self, env_ids):
         if self.cfg.rewards.periodic_reward_framework.selected_gait is not None:
@@ -279,6 +292,24 @@ class GO2Deploy(LeggedRobot):
                 self.foot_index_rl = self.feet_indices[i]
             elif "RR" in self.feet_names[i]:
                 self.foot_index_rr = self.feet_indices[i]
+    
+    def _init_domain_params(self):
+        super()._init_domain_params()
+        self._kp_scale = torch.ones(self.num_envs, self.num_actions, dtype=gs.tc_float, device=self.device)
+        self._kd_scale = torch.ones(self.num_envs, self.num_actions, dtype=gs.tc_float, device=self.device)
+    
+    def _episodic_domain_randomization(self, env_ids):
+        """ Update scale of Kp, Kd, rfi lim"""
+        if len(env_ids) == 0:
+            return
+
+        if self.cfg.domain_rand.randomize_pd_gain:
+
+            self._kp_scale[env_ids] = gs_rand_float(
+                self.cfg.domain_rand.kp_range[0], self.cfg.domain_rand.kp_range[1], (len(env_ids), self.num_actions), device=self.device)
+            self._kd_scale[env_ids] = gs_rand_float(
+                self.cfg.domain_rand.kd_range[0], self.cfg.domain_rand.kd_range[1], (len(env_ids), self.num_actions), device=self.device)
+
             
     def _parse_cfg(self, cfg):
         super()._parse_cfg(cfg)

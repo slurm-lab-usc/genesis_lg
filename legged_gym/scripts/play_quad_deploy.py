@@ -37,7 +37,7 @@ def play(args):
     # initial state randomization
     env_cfg.init_state.yaw_angle_range = [0., 0.]
     # velocity range
-    env_cfg.commands.ranges.lin_vel_x = [1.0, 1.0]
+    env_cfg.commands.ranges.lin_vel_x = [0.0, 0.0]
     env_cfg.commands.ranges.lin_vel_y = [-0., 0.]
     env_cfg.commands.ranges.ang_vel_yaw = [0., 0.]
     env_cfg.commands.ranges.heading = [0, 0]
@@ -103,24 +103,81 @@ def play(args):
         if i < stop_state_log:
             logger.log_states(
                 {
-                    'command_x': env.commands[robot_index, 0].item(),
-                    'command_y': env.commands[robot_index, 1].item(),
-                    'command_yaw': env.commands[robot_index, 2].item(),
-                    'base_vel_x': env.base_lin_vel[robot_index, 0].item(),
-                    'base_vel_y': env.base_lin_vel[robot_index, 1].item(),
-                    'base_vel_yaw': env.base_ang_vel[robot_index, 2].item(),
-                    'exp_C_frc_fl': env.exp_C_frc_fl[robot_index, 0].item(),
-                    'exp_C_frc_fr': env.exp_C_frc_fr[robot_index, 0].item(),
-                    'exp_C_frc_rl': env.exp_C_frc_rl[robot_index, 0].item(),
-                    'exp_C_frc_rr': env.exp_C_frc_rr[robot_index, 0].item(),
-                    'contact_forces_fl': env.link_contact_forces[robot_index, env.foot_index_fl, 2].cpu().numpy(),
-                    'contact_forces_fr': env.link_contact_forces[robot_index, env.foot_index_fr, 2].cpu().numpy(),
-                    'contact_forces_rl': env.link_contact_forces[robot_index, env.foot_index_rl, 2].cpu().numpy(),
-                    'contact_forces_rr': env.link_contact_forces[robot_index, env.foot_index_rr, 2].cpu().numpy(),
+                    # 'command_x': env.commands[robot_index, 0].item(),
+                    # 'command_y': env.commands[robot_index, 1].item(),
+                    # 'command_yaw': env.commands[robot_index, 2].item(),
+                    # 'base_vel_x': env.base_lin_vel[robot_index, 0].item(),
+                    # 'base_vel_y': env.base_lin_vel[robot_index, 1].item(),
+                    # 'base_vel_yaw': env.base_ang_vel[robot_index, 2].item(),
+                    # 'exp_C_frc_fl': env.exp_C_frc_fl[robot_index, 0].item(),
+                    # 'exp_C_frc_fr': env.exp_C_frc_fr[robot_index, 0].item(),
+                    # 'exp_C_frc_rl': env.exp_C_frc_rl[robot_index, 0].item(),
+                    # 'exp_C_frc_rr': env.exp_C_frc_rr[robot_index, 0].item(),
+                    # 'contact_forces_fl': env.link_contact_forces[robot_index, env.foot_index_fl, 2].cpu().numpy(),
+                    # 'contact_forces_fr': env.link_contact_forces[robot_index, env.foot_index_fr, 2].cpu().numpy(),
+                    # 'contact_forces_rl': env.link_contact_forces[robot_index, env.foot_index_rl, 2].cpu().numpy(),
+                    # 'contact_forces_rr': env.link_contact_forces[robot_index, env.foot_index_rr, 2].cpu().numpy(),
+
+                    # Log observations
+                    "cmd_lin_x": obs[robot_index, 0].item(),
+                    "cmd_lin_y": obs[robot_index, 1].item(),
+                    "cmd_ang_yaw": obs[robot_index, 2].item(),
+                    "projected_g0": obs[robot_index, 3].item(),
+                    "projected_g1": obs[robot_index, 4].item(),
+                    "projected_g2": obs[robot_index, 5].item(),
+                    "base_ang_vel_x": obs[robot_index, 6].item(),
+                    "base_ang_vel_y": obs[robot_index, 7].item(),
+                    "base_ang_vel_z": obs[robot_index, 8].item(),
+                    "jpos0": obs[robot_index, 9].item(),
+                    "jpos1": obs[robot_index, 10].item(),
+                    "jpos2": obs[robot_index, 11].item(),
+                    "jpos3": obs[robot_index, 12].item(),
+                    "jpos4": obs[robot_index, 13].item(),
+                    "jpos5": obs[robot_index, 14].item(),
+                    "jpos6": obs[robot_index, 15].item(),
+                    "jpos7": obs[robot_index, 16].item(),
+                    "jpos8": obs[robot_index, 17].item(),
+                    "jpos9": obs[robot_index, 18].item(),
+                    "jpos10": obs[robot_index, 19].item(),
+                    "jpos11": obs[robot_index, 20].item(),
+                    "jvel0": obs[robot_index, 21].item(),
+                    "jvel1": obs[robot_index, 22].item(),
+                    "jvel2": obs[robot_index, 23].item(),
+                    "jvel3": obs[robot_index, 24].item(),
+                    "jvel4": obs[robot_index, 25].item(),
+                    "jvel5": obs[robot_index, 26].item(),
+                    "jvel6": obs[robot_index, 27].item(),
+                    "jvel7": obs[robot_index, 28].item(),
+                    "jvel8": obs[robot_index, 29].item(),
+                    "jvel9": obs[robot_index, 30].item(),
+                    "jvel10": obs[robot_index, 31].item(),
+                    "jvel11": obs[robot_index, 32].item(),
+                    "action0": obs[robot_index, 33].item(),
+                    "action1": obs[robot_index, 34].item(),
+                    "action2": obs[robot_index, 35].item(),
+                    "action3": obs[robot_index, 36].item(),
+                    "action4": obs[robot_index, 37].item(),
+                    "action5": obs[robot_index, 38].item(),
+                    "action6": obs[robot_index, 39].item(),
+                    "action7": obs[robot_index, 40].item(),
+                    "action8": obs[robot_index, 41].item(),
+                    "action9": obs[robot_index, 42].item(),
+                    "action10": obs[robot_index, 43].item(),
+                    "action11": obs[robot_index, 44].item(),
+                    "clock0": obs[robot_index, 45].item(),
+                    "clock1": obs[robot_index, 46].item(),
+                    "clock2": obs[robot_index, 47].item(),
+                    "clock3": obs[robot_index, 48].item(),
+                    "theta0": obs[robot_index, 49].item(),
+                    "theta1": obs[robot_index, 50].item(),
+                    "theta2": obs[robot_index, 51].item(),
+                    "theta3": obs[robot_index, 52].item(),
+                    "gait_period": obs[robot_index, 53].item(),
+                    "swing_phase_ratio": obs[robot_index, 54].item(),
                 }
             )
         elif i==stop_state_log:
-            logger.plot_states()
+            # logger.plot_states()
             logger.save_data_to_xlsx()
         if  0 < i < stop_rew_log:
             if infos["episode"]:
@@ -131,7 +188,7 @@ def play(args):
             logger.print_rewards()
 
 if __name__ == '__main__':
-    EXPORT_POLICY = False
+    EXPORT_POLICY = True
     RECORD_FRAMES = False  # only record frames in extra camera view
     MOVE_CAMERA   = False
     FOLLOW_ROBOT  = False

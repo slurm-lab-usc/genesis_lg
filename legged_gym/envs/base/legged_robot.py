@@ -171,6 +171,8 @@ class LeggedRobot(BaseTask):
             self._randomize_base_mass(env_ids)
         if self.cfg.domain_rand.randomize_com_displacement:
             self._randomize_com_displacement(env_ids)
+        if self.cfg.domain_rand.randomize_joint_armature:
+            self._randomize_joint_armature(env_ids)
 
         # reset buffers
         self.llast_actions[env_ids] = 0.
@@ -738,7 +740,10 @@ class LeggedRobot(BaseTask):
         # randomize COM displacement
         if self.cfg.domain_rand.randomize_com_displacement:
             self._randomize_com_displacement(np.arange(self.num_envs))
-
+        # randomize joint armature
+        if self.cfg.domain_rand.randomize_joint_armature:
+            self._randomize_joint_armature(np.arange(self.num_envs))
+            
     def _init_domain_params(self):
         self._friction_values = torch.zeros(
             self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
@@ -748,6 +753,8 @@ class LeggedRobot(BaseTask):
             self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
         self._base_com_bias = torch.zeros(
             self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
+        self._joint_armature = torch.zeros(
+            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
 
     def _randomize_friction(self, env_ids=None):
         ''' Randomize friction of all links'''
@@ -779,6 +786,20 @@ class LeggedRobot(BaseTask):
         self._base_com_bias[env_ids] = com_displacement[:, 0, :].detach().clone()
 
         self.rigid_solver.set_links_COM_shift(com_displacement, [base_link_id,], env_ids)
+    
+    def _randomize_joint_armature(self, env_ids):
+        """ Randomize joint armature of the robot
+        """
+        min_armature, max_armature = self.cfg.domain_rand.joint_armature_range
+        armature = gs.rand((self.num_actions,), dtype=float) \
+                    * (max_armature - min_armature) + min_armature
+        self._joint_armature[env_ids] = armature.repeat(len(env_ids), 1).detach().clone()
+        self.robot.set_dofs_armature(armature, self.motors_dof_idx, envs_idx=env_ids)
+        
+        # # debug
+        # for name in self.cfg.asset.dof_names:
+        #     joint = self.robot.get_joint(name)
+        #     import ipdb; ipdb.set_trace()
 
     def _parse_cfg(self, cfg):
         self.dt = self.cfg.control.dt

@@ -78,9 +78,9 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
 
 - Incorporation of various methods in published RL papers
   
-  | Method | Paper Link | Location |
-  |--------|------------|----------|
-  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | [`_uniped_periodic_gait() in go2_deploy.py`](https://github.com/lupinjia/genesis_lr/blob/main/legged_gym/envs/go2/go2_deploy/go2_deploy.py) |
+  | Method | Paper Link | Location | Materials |
+  |--------|------------|----------|-----------|
+  | Periodic Gait Reward | [Sim-to-Real Learning of All Common Bipedal Gaits via Periodic Reward Composition](https://arxiv.org/abs/2011.01387) | [`_uniped_periodic_gait() in go2_deploy.py`](https://github.com/lupinjia/genesis_lr/blob/main/legged_gym/envs/go2/go2_deploy/go2_deploy.py#L291) | [Comparison between smooth gait function and step gait function](https://github.com/lupinjia/genesis_lr/blob/main/test_resources/gait_reward_type/gait_reward_type.md) |
 
 ## 🧪 Test Results
 
