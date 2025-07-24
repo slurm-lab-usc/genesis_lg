@@ -41,8 +41,3 @@ class GO2(LeggedRobot):
             envs_idx=envs_idx,
         )
         self.robot.zero_all_dofs_velocity(envs_idx)
-
-    def _reward_action_smoothness(self):
-        '''Penalize action smoothness'''
-        action_smoothness_cost = torch.sum(torch.square(self.actions - 2*self.last_actions + self.llast_actions), dim=-1)
-        return action_smoothness_cost

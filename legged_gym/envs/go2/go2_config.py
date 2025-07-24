@@ -116,9 +116,6 @@ class GO2Cfg( LeggedRobotCfg ):
         max_push_vel_xy = 1.
         randomize_com_displacement = True
         com_displacement_range = [-0.03, 0.03]
-    
-    class viewer( LeggedRobotCfg.viewer ):
-        rendered_envs_idx = [i for i in range(10)]  # number of environments to be rendered
 
 class GO2CfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):

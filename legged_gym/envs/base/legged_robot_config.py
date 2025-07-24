@@ -96,6 +96,10 @@ class LeggedRobotCfg(BaseConfig):
         ctrl_delay_step_range = [0, 1]
         randomize_joint_armature = False
         joint_armature_range = [0.0, 0.05]  # [N*m*s/rad]
+        randomize_joint_stiffness = False
+        joint_stiffness_range = [0.0, 0.1]
+        randomize_joint_damping = False
+        joint_damping_range = [0.0, 1.0]
 
     class rewards:
         class scales:

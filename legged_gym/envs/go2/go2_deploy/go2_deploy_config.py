@@ -151,11 +151,14 @@ class GO2DeployCfg(LeggedRobotCfg):
         kd_range = [0.8, 1.2]
         randomize_joint_armature = False
         joint_armature_range = [0.015, 0.025]  # [N*m*s/rad]
+        randomize_joint_stiffness = False
+        joint_stiffness_range = [0.0, 0.1]
+        randomize_joint_damping = False
+        joint_damping_range = [0.0, 1.0]
 
     class normalization(LeggedRobotCfg.normalization):
         clip_observations = 20.
         clip_actions = 10.
-
 
 class GO2DeployCfgPPO(LeggedRobotCfgPPO):
     seed = 0
@@ -168,6 +171,6 @@ class GO2DeployCfgPPO(LeggedRobotCfgPPO):
         run_name = 'step_gait'
         experiment_name = 'go2_deploy'
         save_interval = 100
-        load_run = "Jul24_15-41-09_step_gait"
+        load_run = "Jul24_18-33-24_step_gait"
         checkpoint = -1
         max_iterations = 3000

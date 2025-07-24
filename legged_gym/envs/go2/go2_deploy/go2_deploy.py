@@ -421,9 +421,3 @@ class GO2Deploy(LeggedRobot):
         quad_reward = quad_reward_fl.flatten() + quad_reward_fr.flatten() + \
             quad_reward_rl.flatten() + quad_reward_rr.flatten()
         return torch.exp(quad_reward)
-
-    def _reward_action_smoothness(self):
-        '''Penalize action smoothness'''
-        action_smoothness_cost = torch.sum(torch.square(
-            self.actions - 2*self.last_actions + self.llast_actions), dim=-1)
-        return action_smoothness_cost

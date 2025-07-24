@@ -41,10 +41,14 @@ from legged_gym.envs.go2.go2_deploy.go2_deploy_config import GO2DeployCfg, GO2De
 # bipedal_walker
 from legged_gym.envs.bipedal_walker.bipedal_walker_config import BipedalWalkerCfg, BipedalWalkerCfgPPO
 from legged_gym.envs.bipedal_walker.bipedal_walker import BipedalWalker
+# go2_sysid
+from legged_gym.envs.go2.go2_sysid.go2_sysid import GO2SysID
+from legged_gym.envs.go2.go2_sysid.go2_sysid_config import GO2SysIDCfg
 
 from legged_gym.utils.task_registry import task_registry
 
 task_registry.register( "go2", GO2, GO2Cfg(), GO2CfgPPO())
 task_registry.register( "go2_rough", GO2, GO2RoughCfg(), GO2RoughCfgPPO())
 task_registry.register( "go2_deploy", GO2Deploy, GO2DeployCfg(), GO2DeployCfgPPO())
+task_registry.register( "go2_sysid", GO2SysID, GO2SysIDCfg(), GO2CfgPPO())
 task_registry.register( "bipedal_walker", BipedalWalker, BipedalWalkerCfg(), BipedalWalkerCfgPPO())
