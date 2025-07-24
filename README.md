@@ -6,7 +6,6 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
 
 - [🦿 Legged Robotics in Genesis](#-legged-robotics-in-genesis)
   - [Table of Contents](#table-of-contents)
-  - [📅 Updates](#-updates)
   - [🌟 Features](#-features)
   - [🧪 Test Results](#-test-results)
   - [🛠 Installation](#-installation)
@@ -18,51 +17,6 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
   - [TODO](#todo)
 
 ---
-## 📅 Updates
-
-<details>
-<summary>2025/07/23</summary>
-
-- Added new feature: periodic gait reward for go2_deploy
-
-</details>
-
-<details>
-<summary>2025/02/10</summary>
-
-- add measure_heights support, and provide a demo of exteroceptive locomotion ([go2_rough](https://github.com/lupinjia/genesis_lr/tree/main/legged_gym/envs/go2/go2_rough))
-
-![](./test_resources//go2_rough_demo.gif)
-
-</details>
-
-<details>
-<summary>2024/12/28</summary>
-
-- add [wiki page](https://github.com/lupinjia/genesis_lr/wiki) for instructions
-
-</details>
-
-<details>
-<summary>2024/12/26</summary>
-
-- add terrain support, optional terrain type: ["plane", "heightfield"]. 
-
-  ![](./test_resources/terrain_demo.gif)
-
-- move test results to [tests.md](./test_resources/tests.md)
-
-</details>
-
-<details>
-<summary>2024/12/24</summary>
-
-- add a new demo environment `bipedal_walker`
-
-</details>
-
----
-
 
 ## 🌟 Features
 
