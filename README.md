@@ -12,6 +12,7 @@ A [legged_gym](https://github.com/leggedrobotics/legged_gym) based framework for
   - [👋 Usage](#-usage)
     - [🚀 Quick Start](#-quick-start)
     - [📖 Instructions](#-instructions)
+    - [Deployment](#deployment)
   - [🖼️ Gallery](#️-gallery)
   - [🙏 Acknowledgements](#-acknowledgements)
   - [TODO](#todo)
@@ -84,11 +85,16 @@ Then, run `play.py` to visualize the trained model:
 
 For more detailed instructions, please refer to the [wiki page](https://github.com/lupinjia/genesis_lr/wiki)
 
+### Deployment
+
+For deployment code, please refer to [go2_deploy](https://github.com/lupinjia/go2_deploy)
+
 ## 🖼️ Gallery
 
-| Go2 | Bipedal Walker |
-|--- | --- |
-| ![](./test_resources/go2_flat_play.gif) | ![](./test_resources/bipedal_walker_flat.gif) |
+| Robot | Sim | Real |
+|--- | --- | --- |
+| Unitree Go2 | ![](./test_resources/go2_flat_play.gif) | ![](./test_resources/go2_real.gif) |
+| Bipedal Walker | ![](./test_resources/bipedal_walker_flat.gif) | |
 
 ## 🙏 Acknowledgements
 
@@ -104,5 +110,6 @@ For more detailed instructions, please refer to the [wiki page](https://github.c
 - [x] Verify the trained model on real robots.
 - [x] Add Heightfield support
 - [x] Add meausre_heights support
-- [ ] Add go2 deploy demos and instructions (vanilla and explicit estimator)
+- [x] Add go2 deploy demos and instructions (2025/07/25)
+- [ ] Add explicit estimator support
 - [ ] Add teacher-student implementation
