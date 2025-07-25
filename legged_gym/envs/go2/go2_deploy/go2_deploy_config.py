@@ -12,7 +12,7 @@ class GO2DeployCfg(LeggedRobotCfg):
         c_frame_stack = 3  # critic frame stack
         num_single_obs = 55
         num_observations = int(num_single_obs * frame_stack)
-        single_num_privileged_obs = 73 + 24
+        single_num_privileged_obs = 73 + 27
         num_privileged_obs = int(c_frame_stack * single_num_privileged_obs)
 
     class terrain(LeggedRobotCfg.terrain):
@@ -149,16 +149,25 @@ class GO2DeployCfg(LeggedRobotCfg):
         randomize_pd_gain = True
         kp_range = [0.8, 1.2]
         kd_range = [0.8, 1.2]
-        randomize_joint_armature = False
+        randomize_joint_armature = True
         joint_armature_range = [0.015, 0.025]  # [N*m*s/rad]
-        randomize_joint_stiffness = False
-        joint_stiffness_range = [0.0, 0.1]
-        randomize_joint_damping = False
-        joint_damping_range = [0.0, 1.0]
+        randomize_joint_stiffness = True
+        joint_stiffness_range = [0.01, 0.02]
+        randomize_joint_damping = True
+        joint_damping_range = [0.25, 0.3]
 
     class normalization(LeggedRobotCfg.normalization):
         clip_observations = 20.
         clip_actions = 10.
+    
+    class noise(LeggedRobotCfg.noise):
+        class noise_scales(LeggedRobotCfg.noise.noise_scales):
+            dof_pos = 0.03
+            dof_vel = 0.5
+            lin_vel = 0.1
+            ang_vel = 0.2
+            gravity = 0.05
+            height_measurements = 0.1
 
 class GO2DeployCfgPPO(LeggedRobotCfgPPO):
     seed = 0
@@ -171,6 +180,6 @@ class GO2DeployCfgPPO(LeggedRobotCfgPPO):
         run_name = 'step_gait'
         experiment_name = 'go2_deploy'
         save_interval = 100
-        load_run = "Jul24_18-33-24_step_gait"
+        load_run = "Jul25_10-19-29_step_gait"
         checkpoint = -1
         max_iterations = 3000

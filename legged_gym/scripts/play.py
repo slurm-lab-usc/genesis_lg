@@ -27,12 +27,7 @@ def play(args):
     env_cfg.terrain.border_size = 5
     env_cfg.terrain.num_rows = 2
     env_cfg.terrain.num_cols = 5
-    env_cfg.terrain.curriculum = False
-    env_cfg.terrain.selected = False
     env_cfg.noise.add_noise = True
-    env_cfg.domain_rand.randomize_friction = False
-    env_cfg.domain_rand.push_robots = False
-    env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.asset.fix_base_link = False
     # initial state randomization
     env_cfg.init_state.yaw_angle_range = [0., 0.]

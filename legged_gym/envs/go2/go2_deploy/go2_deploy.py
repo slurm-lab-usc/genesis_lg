@@ -77,8 +77,8 @@ class GO2Deploy(LeggedRobot):
         # control_type = 'P'
         actions_scaled = actions * self.cfg.control.action_scale
         torques = (
-            self._kp_scale * self.batched_p_gains * (actions_scaled + self.default_dof_pos - self.dof_pos)
-            - self._kd_scale * self.batched_d_gains * self.dof_vel
+            self._kp_scale * self.p_gains * (actions_scaled + self.default_dof_pos - self.dof_pos)
+            - self._kd_scale * self.d_gains * self.dof_vel
         )
         return torques
 
@@ -126,6 +126,9 @@ class GO2Deploy(LeggedRobot):
                 # ctrl_delay,                                    # 1
                 self._kp_scale,                                # 12
                 self._kd_scale,                                # 12
+                self._joint_armature,                          # 1
+                self._joint_stiffness,                         # 1
+                self._joint_damping,                           # 1
                 # privileged infos
                 self.exp_C_frc_fl, self.exp_C_spd_fl,
                 self.exp_C_frc_fr, self.exp_C_spd_fr,
@@ -421,3 +424,9 @@ class GO2Deploy(LeggedRobot):
         quad_reward = quad_reward_fl.flatten() + quad_reward_fr.flatten() + \
             quad_reward_rl.flatten() + quad_reward_rr.flatten()
         return torch.exp(quad_reward)
+    
+    def _reward_dof_pos_close_to_default(self):
+        """ Reward for the DOF position close to default position
+        """
+        dof_pos_error = torch.sum(torch.square(self.dof_pos - self.default_dof_pos), dim=-1)
+        return dof_pos_error

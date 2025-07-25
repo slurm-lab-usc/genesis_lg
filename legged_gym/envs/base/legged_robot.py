@@ -393,8 +393,8 @@ class LeggedRobot(BaseTask):
         # control_type = 'P'
         actions_scaled = actions * self.cfg.control.action_scale
         torques = (
-            self.batched_p_gains * (actions_scaled + self.default_dof_pos - self.dof_pos)
-            - self.batched_d_gains * self.dof_vel
+            self.p_gains * (actions_scaled + self.default_dof_pos - self.dof_pos)
+            - self.d_gains * self.dof_vel
         )
         return torques
     
@@ -624,11 +624,11 @@ class LeggedRobot(BaseTask):
                     self.d_gains.append(damping[key])
         self.p_gains = torch.tensor(self.p_gains, device=self.device)
         self.d_gains = torch.tensor(self.d_gains, device=self.device)
-        self.batched_p_gains = self.p_gains[None, :].repeat(self.num_envs, 1)
-        self.batched_d_gains = self.d_gains[None, :].repeat(self.num_envs, 1)
+        self.p_gains = self.p_gains[None, :].repeat(self.num_envs, 1)
+        self.d_gains = self.d_gains[None, :].repeat(self.num_envs, 1)
         # PD control params
-        self.robot.set_dofs_kp(self.batched_p_gains, self.motors_dof_idx)
-        self.robot.set_dofs_kv(self.batched_d_gains, self.motors_dof_idx)
+        self.robot.set_dofs_kp(self.p_gains, self.motors_dof_idx)
+        self.robot.set_dofs_kv(self.d_gains, self.motors_dof_idx)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
@@ -758,6 +758,7 @@ class LeggedRobot(BaseTask):
             self._randomize_joint_damping(np.arange(self.num_envs))
             
     def _init_domain_params(self):
+        """ Initializes domain randomization parameters, which are used to randomize the environment."""
         self._friction_values = torch.zeros(
             self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
         self._added_base_mass = torch.ones(
@@ -767,11 +768,11 @@ class LeggedRobot(BaseTask):
         self._base_com_bias = torch.zeros(
             self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
         self._joint_armature = torch.zeros(
-            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+            self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
         self._joint_stiffness = torch.zeros(
-            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+            self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
         self._joint_damping = torch.zeros(
-            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+            self.num_envs, 1, dtype=torch.float, device=self.device, requires_grad=False)
 
     def _randomize_friction(self, env_ids=None):
         ''' Randomize friction of all links'''
@@ -808,32 +809,30 @@ class LeggedRobot(BaseTask):
         """ Randomize joint armature of the robot
         """
         min_armature, max_armature = self.cfg.domain_rand.joint_armature_range
-        armature = gs.rand((1,), dtype=float).repeat(self.num_actions) \
+        armature = torch.rand((len(env_ids), 1), dtype=gs.tc_float, device=self.device) \
                     * (max_armature - min_armature) + min_armature
-        self._joint_armature[env_ids] = armature.repeat(len(env_ids), 1).detach().clone()
+        self._joint_armature[env_ids, 0] = armature[:, 0].detach().clone()
+        armature = armature.repeat(1, self.num_actions) # repeat for all motors
         self.robot.set_dofs_armature(armature, self.motors_dof_idx, envs_idx=env_ids)
-        
-        # # debug
-        # for name in self.cfg.asset.dof_names:
-        #     joint = self.robot.get_joint(name)
-        #     import ipdb; ipdb.set_trace()
     
     def _randomize_joint_stiffness(self, env_ids):
         """ Randomize joint stiffness of the robot
         """
         min_stiffness, max_stiffness = self.cfg.domain_rand.joint_stiffness_range
-        stiffness = gs.rand((1,), dtype=float).repeat(self.num_actions) \
+        stiffness = torch.rand((len(env_ids), 1), dtype=gs.tc_float, device=self.device) \
                     * (max_stiffness - min_stiffness) + min_stiffness
-        self._joint_stiffness[env_ids] = stiffness.repeat(len(env_ids), 1).detach().clone()
+        self._joint_stiffness[env_ids, 0] = stiffness[:, 0].detach().clone()
+        stiffness = stiffness.repeat(1, self.num_actions)
         self.robot.set_dofs_stiffness(stiffness, self.motors_dof_idx, envs_idx=env_ids)
-    
+
     def _randomize_joint_damping(self, env_ids):
         """ Randomize joint damping of the robot
         """
         min_damping, max_damping = self.cfg.domain_rand.joint_damping_range
-        damping = gs.rand((1,), dtype=float).repeat(self.num_actions) \
+        damping = torch.rand((len(env_ids), 1), dtype=gs.tc_float, device=self.device) \
                     * (max_damping - min_damping) + min_damping
-        self._joint_damping[env_ids] = damping.repeat(len(env_ids), 1).detach().clone()
+        self._joint_damping[env_ids, 0] = damping[:, 0].detach().clone()
+        damping = damping.repeat(1, self.num_actions)
         self.robot.set_dofs_damping(damping, self.motors_dof_idx, envs_idx=env_ids)
 
     def _parse_cfg(self, cfg):

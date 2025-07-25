@@ -96,8 +96,8 @@ class GO2SysID(LeggedRobot):
         )
         self.robot.zero_all_dofs_velocity(envs_idx)
 
-        self.batched_p_gains[:] = kp_des[:]
-        self.batched_d_gains[:] = kd_des[:]
+        self.p_gains[:] = kp_des[:]
+        self.d_gains[:] = kd_des[:]
 
         delay_steps = self.cfg.domain_rand.delay_steps
 

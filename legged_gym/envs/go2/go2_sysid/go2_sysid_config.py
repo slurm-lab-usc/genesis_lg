@@ -97,5 +97,6 @@ class GO2SysIDCfg( LeggedRobotCfg ):
         joint_stiffness_range = [0.0, 0.1]
         joint_damping_range = [0.0, 1.0]
         joint_armature_range = [0.0, 0.1]
+        
         kp_range = [20.0, 20.0]
         kd_range = [0.5, 0.5]
