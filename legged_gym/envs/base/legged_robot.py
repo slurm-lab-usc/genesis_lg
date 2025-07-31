@@ -265,7 +265,7 @@ class LeggedRobot(BaseTask):
                     self._friction_values,        # 1
                     self._added_base_mass,        # 1
                     self._base_com_bias,          # 3
-                    self._rand_push_vels[:, :2],  # 3
+                    self._rand_push_vels[:, :2],  # 2
                     ctrl_delay,                   # 1
                 ),
                 dim=-1,

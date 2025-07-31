@@ -3,9 +3,9 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 class GO2Cfg( LeggedRobotCfg ):
     
     class env( LeggedRobotCfg.env ):
-        num_envs = 8192
+        num_envs = 4096
         num_observations = 48
-        num_privileged_obs = 67
+        num_privileged_obs = 68
         num_actions = 12
         env_spacing = 0.5
     
@@ -105,17 +105,6 @@ class GO2Cfg( LeggedRobotCfg ):
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
             heading = [-3.14, 3.14]
-    
-    class domain_rand( LeggedRobotCfg.domain_rand ):
-        randomize_friction = True
-        friction_range = [0.2, 1.7]
-        randomize_base_mass = True
-        added_mass_range = [-1., 1.]
-        push_robots = True
-        push_interval_s = 15
-        max_push_vel_xy = 1.
-        randomize_com_displacement = True
-        com_displacement_range = [-0.03, 0.03]
 
 class GO2CfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):

@@ -46,16 +46,7 @@ For tests conducted on Genesis, please refer to [tests.md](./test_resources/test
 1. Create a new python virtual env with python>=3.10
 2. Install [PyTorch](https://pytorch.org/)
 3. Install Genesis following the instructions in the [Genesis repo](https://github.com/Genesis-Embodied-AI/Genesis)
-4. Install rsl_rl and tensorboard
-   ```bash
-   # Install rsl_rl.
-   git clone git@github.com:leggedrobotics/rsl_rl.git
-   cd rsl_rl && git checkout v1.0.2 && pip install -e . --use-pep517
-
-   # Install tensorboard.
-   pip install tensorboard
-   ```
-5. Install genesis_lr
+4. Install genesis_lr
    ```bash
    git clone git@github.com:lupinjia/genesis_lr.git
    cd genesis_lr

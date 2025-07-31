@@ -10,6 +10,11 @@ setup(
     author_email='jason_1120202397@163.com',
     description='Genesis environments for Legged Robots',
     install_requires=['genesis-world',
-                      'rsl-rl',
-                      'matplotlib']
+                      'torch',
+                      'matplotlib',
+                      'torchvision',
+                      'numpy',
+                      'tensorboard',
+                      'xlsxwriter',
+                      'pandas']
 )
