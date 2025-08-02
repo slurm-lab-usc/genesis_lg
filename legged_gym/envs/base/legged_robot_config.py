@@ -43,6 +43,7 @@ class LeggedRobotCfg(BaseConfig):
         num_commands = 4 # default: lin_vel_x, lin_vel_y, ang_vel_yaw, heading (in heading mode ang_vel_yaw is recomputed from heading error)
         resampling_time = 10. # time before command are changed[s]
         heading_command = True # if true: compute ang vel command from heading error
+        curriculum_threshold = 0.8 # threshold for curriculum learning, if the tracking reward is above this threshold, increase the command range
         class ranges:
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]

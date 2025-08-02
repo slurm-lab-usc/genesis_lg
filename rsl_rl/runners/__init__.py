@@ -29,3 +29,8 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 from .on_policy_runner import OnPolicyRunner
+from .ts_runner import TSRunner
+
+from rsl_rl.utils.runner_registry import runner_registry
+runner_registry.register("OnPolicyRunner", OnPolicyRunner)
+runner_registry.register("TSRunner", TSRunner)

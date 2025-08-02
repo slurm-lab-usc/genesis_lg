@@ -6,7 +6,7 @@ import numpy as np
 
 from rsl_rl.env import VecEnv
 from rsl_rl.runners import OnPolicyRunner
-# from rsl_rl.utils.runner_registry import runner_registry
+from rsl_rl.utils.runner_registry import runner_registry
 
 from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
 from .helpers import get_args, update_cfg_from_args, class_to_dict, get_load_path, get_load_path_ee, set_seed
@@ -113,10 +113,9 @@ class TaskRegistry():
         
         train_cfg_dict = class_to_dict(train_cfg)
         sim_device = "cpu" if args.cpu else "cuda"
-        # # select runner according to runner_class_name
-        # runner_class = runner_registry.get_runner_class(train_cfg.runner_class_name)
-        # runner = runner_class(env, train_cfg_dict, log_dir, device=sim_device)
-        runner = OnPolicyRunner(env, train_cfg_dict, log_dir, device=sim_device)
+        # select runner according to runner_class_name
+        runner_class = runner_registry.get_runner_class(train_cfg.runner_class_name)
+        runner = runner_class(env, train_cfg_dict, log_dir, device=sim_device)
         #save resume path before creating a new log_dir
         resume = train_cfg.runner.resume
         if resume:
