@@ -5,7 +5,7 @@ class GO2Cfg( LeggedRobotCfg ):
     class env( LeggedRobotCfg.env ):
         num_envs = 4096
         num_observations = 48
-        num_privileged_obs = 68
+        num_privileged_obs = None
         num_actions = 12
         env_spacing = 0.5
     

@@ -93,7 +93,7 @@ class LeggedRobotCfg(BaseConfig):
         max_push_vel_xy = 1.
         randomize_com_displacement = True
         com_displacement_range = [-0.01, 0.01]
-        randomize_ctrl_delay = True
+        randomize_ctrl_delay = False
         ctrl_delay_step_range = [0, 1]
         randomize_joint_armature = False
         joint_armature_range = [0.0, 0.05]  # [N*m*s/rad]
@@ -160,7 +160,6 @@ class LeggedRobotCfg(BaseConfig):
         add_camera = False
 
     class sim:
-        use_implicit_controller = False
         gravity = [0., 0. ,-9.81]  # [m/s^2]
 
 

@@ -42,8 +42,8 @@ class GO2Deploy(LeggedRobot):
         self.dof_pos[:] = self.robot.get_dofs_position(self.motors_dof_idx)
         self.dof_vel[:] = self.robot.get_dofs_velocity(self.motors_dof_idx)
         self.link_contact_forces[:] = self.robot.get_links_net_contact_force()
-        self.link_pos[:] = self.robot.get_links_pos()
-        self.link_vel[:] = self.robot.get_links_vel()
+        self.feet_pos[:] = self.robot.get_links_pos()[:, self.feet_indices, :]
+        self.feet_vel[:] = self.robot.get_links_vel()[:, self.feet_indices, :]
         
         self._post_physics_step_callback()
 
@@ -328,7 +328,7 @@ class GO2Deploy(LeggedRobot):
             q_frc = torch.norm(
                 self.link_contact_forces[:, self.foot_index_fl, :], dim=-1).view(-1, 1)
             q_spd = torch.norm(
-                self.link_vel[:, self.foot_index_fl, :], dim=-1).view(-1, 1)
+                self.feet_vel[:, 0, :], dim=-1).view(-1, 1) # sequence of feet_pos is FL, FR, RL, RR
             # size: num_envs; need to reshape to (num_envs, 1), or there will be error due to broadcasting
             # modulo phi over 1.0 to get cicular phi in [0, 1.0]
             phi = (self.phi + self.theta[:, 0].unsqueeze(1)) % 1.0
@@ -336,19 +336,19 @@ class GO2Deploy(LeggedRobot):
             q_frc = torch.norm(
                 self.link_contact_forces[:, self.foot_index_fr, :], dim=-1).view(-1, 1)
             q_spd = torch.norm(
-                self.link_vel[:, self.foot_index_fr, :], dim=-1).view(-1, 1)
+                self.feet_vel[:, 1, :], dim=-1).view(-1, 1)
             # modulo phi over 1.0 to get cicular phi in [0, 1.0]
             phi = (self.phi + self.theta[:, 1].unsqueeze(1)) % 1.0
         elif foot_type == "RL":
             q_frc = torch.norm(
                 self.link_contact_forces[:, self.foot_index_rl, :], dim=-1).view(-1, 1)
-            q_spd = torch.norm(self.link_vel[:, self.foot_index_rl, :], dim=-1).view(-1, 1)
+            q_spd = torch.norm(self.feet_vel[:, 2, :], dim=-1).view(-1, 1)
             # modulo phi over 1.0 to get cicular phi in [0, 1.0]
             phi = (self.phi + self.theta[:, 2].unsqueeze(1)) % 1.0
         elif foot_type == "RR":
             q_frc = torch.norm(
                 self.link_contact_forces[:, self.foot_index_rr, :], dim=-1).view(-1, 1)
-            q_spd = torch.norm(self.link_vel[:, self.foot_index_rr, :], dim=-1).view(-1, 1)
+            q_spd = torch.norm(self.feet_vel[:, 3, :], dim=-1).view(-1, 1)
             # modulo phi over 1.0 to get cicular phi in [0, 1.0]
             phi = (self.phi + self.theta[:, 3].unsqueeze(1)) % 1.0
         

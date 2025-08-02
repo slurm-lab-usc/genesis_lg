@@ -104,4 +104,4 @@ For deployment code, please refer to [go2_deploy](https://github.com/lupinjia/go
 - [x] Add meausre_heights support
 - [x] Add go2 deploy demos and instructions (2025/07/25)
 - [ ] Add explicit estimator support
-- [ ] Add teacher-student implementation
+- [x] Add teacher-student implementation (2025/08/02)

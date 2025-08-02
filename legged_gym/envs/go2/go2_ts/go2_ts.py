@@ -37,26 +37,20 @@ class Go2TS(LeggedRobot):
             self.action_queue[:, 0] = self.actions.clone()
             self.actions = self.action_queue[torch.arange(
                 self.num_envs), self.action_delay].clone()
-        if self.cfg.sim.use_implicit_controller:  # use embedded pd controller
-            target_dof_pos = self._compute_target_dof_pos(self.actions)
-            self.robot.control_dofs_position(
-                target_dof_pos, self.motors_dof_idx)
+        # use self-implemented pd controller
+        for _ in range(self.cfg.control.decimation):
+            self.torques = self._compute_torques(self.actions)
+            if self.num_build_envs == 0:
+                torques = self.torques.squeeze()
+                self.robot.control_dofs_force(torques, self.motors_dof_idx)
+            else:
+                self.robot.control_dofs_force(
+                    self.torques, self.motors_dof_idx)
             self.scene.step()
-        else:
-            # use self-implemented pd controller
-            for _ in range(self.cfg.control.decimation):
-                self.torques = self._compute_torques(self.actions)
-                if self.num_build_envs == 0:
-                    torques = self.torques.squeeze()
-                    self.robot.control_dofs_force(torques, self.motors_dof_idx)
-                else:
-                    self.robot.control_dofs_force(
-                        self.torques, self.motors_dof_idx)
-                self.scene.step()
-                self.dof_pos[:] = self.robot.get_dofs_position(
-                    self.motors_dof_idx)
-                self.dof_vel[:] = self.robot.get_dofs_velocity(
-                    self.motors_dof_idx)
+            self.dof_pos[:] = self.robot.get_dofs_position(
+                self.motors_dof_idx)
+            self.dof_vel[:] = self.robot.get_dofs_velocity(
+                self.motors_dof_idx)
         self.post_physics_step()
 
         # return clipped obs, clipped states (None), rewards, dones and infos
@@ -119,7 +113,6 @@ class Go2TS(LeggedRobot):
                     self._added_base_mass,        # 1
                     self._base_com_bias,          # 3
                     self._rand_push_vels[:, :2],  # 2
-                    # ctrl_delay,                   # 1
                     (self._kp_scale - 
                      self.kp_scale_offset),       # num_actions
                     (self._kd_scale - 
