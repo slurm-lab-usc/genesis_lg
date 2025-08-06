@@ -99,26 +99,6 @@ class BipedalWalkerCfg( LeggedRobotCfg ):
             lin_vel_y = [-0.5, 0.5]   # min max [m/s]
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
             heading = [-3.14, 3.14]
-    
-    class domain_rand:
-        randomize_friction = True
-        friction_range = [0.2, 1.7]
-        randomize_base_mass = True
-        added_mass_range = [-1., 1.]
-        push_robots = True
-        push_interval_s = 15
-        max_push_vel_xy = 1.
-        simulate_action_latency = False # 1 step delay
-        randomize_com_displacement = False
-        com_displacement_range = [-0.01, 0.01]
-    
-    # viewer camera:
-    class viewer:
-        ref_env = 0
-        pos = [10, 0, 6]       # [m]
-        lookat = [11., 5, 3.]  # [m]
-        num_rendered_envs = 10  # number of environments to be rendered
-        add_camera = False
 
 class BipedalWalkerCfgPPO( LeggedRobotCfgPPO ):
     runner_class_name = "OnPolicyRunner"

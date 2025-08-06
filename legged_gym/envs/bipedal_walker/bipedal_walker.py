@@ -12,7 +12,7 @@ from typing import Tuple, Dict
 
 from legged_gym import LEGGED_GYM_ROOT_DIR
 from legged_gym.envs.base.legged_robot import LeggedRobot
-from legged_gym.utils.math import wrap_to_pi, torch_rand_sqrt_float
+from legged_gym.utils.math_utils import wrap_to_pi, torch_rand_sqrt_float
 from legged_gym.utils.helpers import class_to_dict
 from legged_gym.utils.gs_utils import *
 from .bipedal_walker_config import BipedalWalkerCfg
@@ -58,7 +58,7 @@ class BipedalWalker(LeggedRobot):
         self.dof_vel[envs_idx] = 0.0
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
-            dofs_idx_local=self.motor_dofs,
+            dofs_idx_local=self.motors_dof_idx,
             zero_velocity=True,
             envs_idx=envs_idx,
         )

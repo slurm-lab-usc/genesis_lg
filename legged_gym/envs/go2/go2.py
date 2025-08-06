@@ -12,7 +12,7 @@ from typing import Tuple, Dict
 
 from legged_gym import LEGGED_GYM_ROOT_DIR
 from legged_gym.envs.base.legged_robot import LeggedRobot
-from legged_gym.utils.math import wrap_to_pi, torch_rand_sqrt_float
+from legged_gym.utils.math_utils import wrap_to_pi, torch_rand_sqrt_float
 from legged_gym.utils.helpers import class_to_dict
 from legged_gym.utils.gs_utils import *
 from .go2_config import GO2Cfg
@@ -36,20 +36,8 @@ class GO2(LeggedRobot):
         self.dof_vel[envs_idx] = 0.0
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
-            dofs_idx_local=self.motor_dofs,
+            dofs_idx_local=self.motors_dof_idx,
             zero_velocity=True,
             envs_idx=envs_idx,
         )
         self.robot.zero_all_dofs_velocity(envs_idx)
-    
-    def _reward_feet_air_time(self):
-        # Reward long steps
-        contact = self.link_contact_forces[:, self.feet_indices, 2] > 1.
-        contact_filt = torch.logical_or(contact, self.last_contacts) 
-        self.last_contacts = contact
-        first_contact = (self.feet_air_time > 0.) * contact_filt
-        self.feet_air_time += self.dt
-        rew_airTime = torch.sum((self.feet_air_time - 0.2) * first_contact, dim=1) # reward only on first contact with the ground
-        rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
-        self.feet_air_time *= ~contact_filt
-        return rew_airTime
